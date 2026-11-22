@@ -204,11 +204,10 @@ time**, because the platforms change them often.
 | Library music / trending audio | ❌ | ❌ | — | ❌ | — | — |
 | Biggest catch | Business Verification + app review | Groups can't be posted to via API any more | Company-page access approval is slow and strict | Must pass the audit or every upload is private | Newer API, fewer features | **Cost**: free tier is write-only with a small monthly cap; reading comments/mentions needs a paid plan |
 
-**Shortcut for speed:** a unified posting API (e.g. Ayrshare, Late, Buffer, Publer) has
-already passed most of these approvals, so we can publish to all 6 platforms in week 1.
-Recommended path: **start on a unified API, then move each platform to its direct API**
-once our own app reviews are approved. That removes the monthly fee and the extra
-dependency.
+**Budget = $0 decision:** unified posting APIs (Ayrshare, Buffer and similar) cost money, so we use each
+platform's **official free API directly**. For our own accounts, Meta (Facebook, Instagram, Threads) works without
+App Review, LinkedIn personal-profile posting is self-serve, and X has a free posting tier.
+Setup steps: [`SETUP_FREE.md`](SETUP_FREE.md).
 
 ---
 
@@ -242,44 +241,43 @@ Daily      Radar       → watches for spikes → playbooks (§2-J)
 
 ---
 
-## 7. Technology
+## 7. Technology ($0 budget)
 
-| Layer | Choice | Why |
+| Layer | Free choice | Notes |
 |---|---|---|
-| AI brain | **Claude API** (Anthropic): `claude-opus-5-5` for strategy and QA, `claude-sonnet-5-5` for drafting, `claude-haiku-5-5` for comment classification and spam | Strong writing and reasoning, low cost for high-volume classification |
-| Agent runtime | Scheduled service (Python). Options: our own worker on a cron/queue, or **Claude Managed Agents scheduled deployments** (Anthropic hosts the loop, still in beta) | Must run with nobody at a keyboard, which interactive Claude Code / chat connectors can't do |
-| System of record | Postgres (e.g. Supabase): brand, ideas, calendar, drafts, assets, approvals, posts, metrics, conversations, leads, audit log | One place for every agent and for the dashboard |
-| Approvals | Telegram bot (fastest to build) or Slack/WhatsApp Business, plus a small web dashboard | One-tap approve from a phone |
-| Publishing | Unified posting API at first → direct official APIs (§4) | Speed first, then cost and control |
-| Graphics | HTML/CSS brand templates rendered to PNG (or Canva/Bannerbear/Placid), AI image model for illustrations | Always on-brand, no designer needed |
-| Video | Template video rendering (e.g. Remotion/FFmpeg), AI video for B-roll, text-to-speech voice-over, automatic captions | Short videos without filming |
-| Research | Web search, Google Trends, YouTube Data API, Threads keyword search, platform insights | Mostly free/official sources |
-| Leads | Google Sheet or the company CRM (HubSpot/Zoho) + alert | |
-| Ops | Secrets in a vault/env, error alerts, daily cost report, retries | So it never fails silently |
-
----
+| AI brain | **Our existing Claude plan**, run headless through Claude Code (`claude -p`, token from `claude setup-token`) | No API bill; shares the plan's usage limits. Backup: Gemini API free tier |
+| Runtime | **GitHub Actions** cron, every hour | Free and unlimited for public repos; a keep-alive step stops GitHub switching the schedule off |
+| System of record | **Supabase free Postgres** (SQLite locally) | Repo is public, so no state, tokens or leads are ever committed |
+| Image hosting | Supabase Storage public bucket (or imgbb) | Instagram/Threads fetch images from a public URL |
+| Approvals | **Telegram bot** (polled each run, no server) | One-tap approve, reply to edit, `/pause` kill switch |
+| Publishing | Official free APIs of each platform | See §4 |
+| Graphics | Pillow, rendered from brand colours | No design tool needed |
+| Video (next phase) | FFmpeg + free stock (Pexels API) + free TTS | Faceless short videos |
+| Research | Google News RSS, YouTube channel RSS, blog RSS | No keys, no quota |
 
 ## 8. Build roadmap
 
 | Phase | Time | Output | Human work |
 |---|---|---|---|
 | **0. Setup** | Week 1 | Business accounts on all 6 platforms, Meta Business Verification started, developer apps registered (Meta, LinkedIn, Google, X), brand intake form filled | Owner: ~2–3 h, guided checklist |
-| **1. Brain + drafting** | Weeks 1–2 | Brand Brain, Radar, Strategist, Copywriter, QA; Telegram approval bot; drafts for all 6 platforms | Approve drafts, post by hand for now |
-| **2. Auto-publishing** | Weeks 2–4 | Publisher on a unified API → posting happens on approval; Creative Studio (graphics, carousels, thumbnails) | Approval taps only |
+| **1. Brain + drafting** ✅ built | Weeks 1–2 | Brand Brain, Radar, Strategist, Copywriter, QA; Telegram approval bot; drafts for all 6 platforms | Approve drafts, post by hand for now |
+| **2. Auto-publishing** ✅ built | Weeks 2–4 | Publishers on the official free APIs → posting happens on approval; image cards | Approval taps only |
 | **3. Video** | Weeks 3–5 | Short videos without filming, Shorts clipping from long videos, YouTube uploads | Approval taps; film when we want faces |
 | **4. Community** | Weeks 4–6 | Comments, DMs, spam, lead capture, escalations | Tier 2 replies only |
 | **5. Analytics + learning** | Weeks 5–7 | Metrics pipeline, weekly/monthly reports, learning loop, A/B tests, playbooks | Read the Monday report |
-| **6. Direct APIs + trust ramp** | Weeks 6–10 | Move off the unified API as our app reviews pass; turn on Tier 0 categories | Say yes to trust-ramp proposals |
+| **6. Company pages + trust ramp** | Weeks 6–10 | LinkedIn company page once approved; YouTube audit; turn on Tier 0 categories | Say yes to trust-ramp proposals |
 
 ---
 
-## 9. Decisions we need from the company
+## 9. Decisions
 
-1. Company name, niche, website, and target country/language (English, Hindi, Hinglish?).
-2. Approval channel: **Telegram** (recommended, fastest), Slack, or WhatsApp?
-3. X/Twitter: post only (free/cheap tier) or also read and reply to comments/mentions (paid tier)?
-4. LinkedIn: company page only, or also the founder's personal profile (posting there is easier to get approved)?
-5. Faces on camera: will someone film, or do we stay faceless/AI voice-over?
-6. Start on a unified posting API (fast, monthly fee) or wait for our own app reviews (slower, free)?
-7. Monthly budget caps: AI usage, tools, and (optional) ads.
-8. Where leads should go: Google Sheet or CRM (which one)?
+Already decided by the $0 budget: Telegram for approvals, official APIs instead of a paid posting service,
+X posting only (free tier), LinkedIn personal profile first (company page once Community Management API
+access is approved), faceless content (no filming needed).
+
+Still needed from the company:
+1. Company name, niche, website, audience and language (English, Hindi or Hinglish?). This goes into `brand/brand.yaml`.
+2. 3–10 of our best past posts, so the AI learns the voice.
+3. Posting days and times per platform (defaults are in `brand/brand.yaml`).
+4. Competitors to watch (their YouTube channels and blogs).
+5. Where leads should go (Google Sheet is free) when the community phase starts.

@@ -1,0 +1,87 @@
+# The AI social media employee's "office hours": one full cycle every hour, for $0.
+# Public repo → GitHub Actions minutes are free and unlimited.
+name: Autopilot
+
+on:
+  schedule:
+    - cron: "17 * * * *"          # every hour at :17 UTC (GitHub may start it a few minutes late)
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "Command: cycle, check, test-llm, plan, draft, publish, status, queue"
+        required: true
+        default: cycle
+
+permissions:
+  contents: read
+  actions: write                   # only used to keep the hourly schedule enabled
+
+concurrency:
+  group: autopilot                 # never two runs at once (no double posting)
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: pip install -r requirements.txt "psycopg[binary]>=3.1"
+
+      - name: Install Claude Code (free AI brain via your Claude plan)
+        if: vars.LLM_PROVIDER == '' || vars.LLM_PROVIDER == 'claude_code'
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Run
+        env:
+          CMD: ${{ github.event.inputs.command || 'cycle' }}
+          # non-secret settings: Settings → Secrets and variables → Actions → Variables
+          SMM_DRY_RUN: ${{ vars.SMM_DRY_RUN || 'true' }}
+          LLM_PROVIDER: ${{ vars.LLM_PROVIDER || 'claude_code' }}
+          LLM_FALLBACK: ${{ vars.LLM_FALLBACK }}
+          MEDIA_HOST: ${{ vars.MEDIA_HOST }}
+          SUPABASE_BUCKET: ${{ vars.SUPABASE_BUCKET || 'media' }}
+          LINKEDIN_TOKEN_EXPIRES: ${{ vars.LINKEDIN_TOKEN_EXPIRES }}
+          IG_GRAPH_HOST: ${{ vars.IG_GRAPH_HOST }}
+          META_GRAPH_VERSION: ${{ vars.META_GRAPH_VERSION }}
+          LINKEDIN_VERSION: ${{ vars.LINKEDIN_VERSION }}
+          # secrets: Settings → Secrets and variables → Actions → Secrets
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          IMGBB_API_KEY: ${{ secrets.IMGBB_API_KEY }}
+          META_PAGE_ID: ${{ secrets.META_PAGE_ID }}
+          META_PAGE_TOKEN: ${{ secrets.META_PAGE_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+          LINKEDIN_AUTHOR_URN: ${{ secrets.LINKEDIN_AUTHOR_URN }}
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+        run: python -m smm "$CMD"
+
+      # GitHub switches off scheduled workflows in public repos after 60 days without commits.
+      # Re-enabling it from inside a run keeps the employee working with nobody touching the repo.
+      - name: Keep the hourly schedule alive
+        if: github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/autopilot.yml/enable" || true

@@ -1,0 +1,99 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  BRAND BRAIN: fill this in once. Every agent reads it before every task.
+#  This repo is PUBLIC: put only information here that is fine to be public.
+#  Secrets (tokens, keys) never go in this file. They go in GitHub Secrets / .env.
+# ─────────────────────────────────────────────────────────────────────────────
+
+company:
+  name: "Your Company"
+  website: "https://example.com"
+  one_liner: "What we do, for whom, in one sentence."
+  offers:
+    - "Main product or service"
+  # Verified facts the AI is allowed to state (prices, numbers, years, results).
+  # Anything NOT listed here will never be claimed in a post.
+  facts:
+    - "Founded in 2024"
+
+audience:
+  description: "Who we talk to: their job, problems, goals."
+  location: "India"
+  language: "English"            # e.g. English, Hinglish (Hindi in Latin script + English), Hindi
+
+voice:
+  tone: "Friendly, expert, practical. No hype."
+  do:
+    - "Use simple words and short sentences"
+    - "Give one concrete, useful takeaway per post"
+  dont:
+    - "Use corporate jargon"
+    - "Sound salesy or desperate"
+  # Paste 3-10 of your best past posts. This is how the AI learns your voice.
+  sample_posts: []
+
+rules:
+  handle: "@yourcompany"
+  cta_default: "Follow for more practical tips."
+  banned_words: ["guaranteed", "100% results", "get rich"]
+  never:
+    - "Mention competitors by name"
+    - "Make medical, legal or financial guarantees"
+    - "Share any customer's personal data"
+    - "Comment on politics or religion"
+
+pillars:                         # what we post about, and how often (weights)
+  - name: "Education"
+    weight: 40
+    description: "Practical how-tos and tips our audience can use today"
+  - name: "Proof"
+    weight: 20
+    description: "Results, case stories and lessons (only from verified facts)"
+  - name: "Behind the scenes"
+    weight: 20
+    description: "How we work, the team, our process and values"
+  - name: "Offer"
+    weight: 20
+    description: "What we sell and why it helps, soft-sell"
+
+timezone: "Asia/Kolkata"
+
+platforms:                       # which days and what local time each platform posts
+  instagram: {enabled: true, days: [mon, wed, fri], time: "19:00", hashtags: 5}
+  facebook:  {enabled: true, days: [mon, wed, fri], time: "19:30", hashtags: 2}
+  linkedin:  {enabled: true, days: [tue, thu], time: "09:30", hashtags: 3}
+  threads:   {enabled: true, days: [mon, tue, wed, thu, fri], time: "13:00", hashtags: 1}
+  x:         {enabled: true, days: [mon, tue, wed, thu, fri], time: "13:30", hashtags: 2}
+  youtube:   {enabled: false, days: [sat], time: "11:00", hashtags: 3}   # turns on with the video pipeline
+
+research:                        # all free sources, no API keys
+  keywords: ["your niche keyword", "another keyword"]
+  news_region: {hl: "en-IN", gl: "IN", ceid: "IN:en"}
+  # Competitors' YouTube channel IDs (the UC... part of the channel URL). Read via free RSS.
+  competitor_youtube_channel_ids: []
+  # Any RSS/Atom feeds: competitor blogs, industry news sites.
+  rss_feeds: []
+
+planning:
+  plan_days: 14                  # keep the calendar filled this far ahead
+  draft_days_ahead: 5            # draft and send for approval this many days ahead
+  max_drafts_per_run: 3          # keeps free AI usage limits safe
+  key_dates: []                  # e.g. [{date: "2026-12-25", name: "Christmas sale"}]
+  formats: ["single image post with caption"]   # carousels and short videos come in later phases
+
+approval:
+  # telegram: every post waits for a tap (recommended to start)
+  # auto: posts with no QA warnings and low risk go out on their own, the rest wait for a tap
+  # cli: approve from the command line (python -m smm approve ID)
+  mode: telegram
+
+qa:
+  llm_review: true               # second AI pass checking voice, claims and risk
+  min_score: 7                   # below this, the draft is rewritten once automatically
+
+design:                          # the post image (1080x1080)
+  background: "#0F172A"
+  text: "#F8FAFC"
+  accent: "#22C55E"
+  font_path: ""                  # optional .ttf (e.g. a free Google Font); default font otherwise
+  bold_font_path: ""
+  logo_path: ""                  # optional transparent PNG, e.g. brand/logo.png
