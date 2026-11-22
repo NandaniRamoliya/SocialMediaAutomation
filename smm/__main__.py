@@ -41,9 +41,10 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
     if os.environ.get("GITHUB_ACTIONS") == "true" and not env("DATABASE_URL") \
             and args.command not in ("check", "test-llm", "card"):
-        print("DATABASE_URL is not set. GitHub Actions runners are wiped after every run, so without a "
-              "database every run would start from zero (and re-send approvals). See docs/SETUP_FREE.md, step 3.")
-        return 1
+        # Not set up yet: skip quietly (exit 0) so GitHub doesn't send a failure email every hour.
+        print("::warning::Not set up yet: DATABASE_URL is missing, so nothing was done. Runners are wiped "
+              "after every run; without a database each run would start from zero. See docs/SETUP_FREE.md, step 3.")
+        return 0
     ap = build(args)
     cfg, db, now = ap.cfg, ap.db, ap.cfg.now()
     cmd = args.command
