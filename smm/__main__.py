@@ -94,7 +94,7 @@ def main(argv=None) -> int:
     elif cmd == "check":
         report = [f"mode: {'DRY RUN (nothing is really posted)' if cfg.dry_run else 'LIVE'}",
                   f"database: {db.kind}",
-                  f"LLM: {env('LLM_PROVIDER') or 'claude_code'}" + (f" (fallback {env('LLM_FALLBACK')})" if env('LLM_FALLBACK') else ""),
+                  f"LLM: {env('LLM_PROVIDER') or 'gemini'}" + (f" (fallback {env('LLM_FALLBACK')})" if env('LLM_FALLBACK') else ""),
                   f"telegram approvals: {'connected' if ap.tg else 'NOT configured'}",
                   f"media host: {env('MEDIA_HOST') or 'none (Instagram needs one when live)'}"]
         for name in cfg.platforms:

@@ -35,8 +35,8 @@ jobs:
       - name: Install
         run: pip install -r requirements.txt "psycopg[binary]>=3.1"
 
-      - name: Install Claude Code (free AI brain via your Claude plan)
-        if: vars.LLM_PROVIDER == '' || vars.LLM_PROVIDER == 'claude_code'
+      - name: Install Claude Code (only when using a Claude Pro/Max plan as the AI brain)
+        if: vars.LLM_PROVIDER == 'claude_code' || vars.LLM_FALLBACK == 'claude_code'
         run: npm install -g @anthropic-ai/claude-code
 
       - name: Run
@@ -44,8 +44,9 @@ jobs:
           CMD: ${{ github.event.inputs.command || 'cycle' }}
           # non-secret settings: Settings → Secrets and variables → Actions → Variables
           SMM_DRY_RUN: ${{ vars.SMM_DRY_RUN || 'true' }}
-          LLM_PROVIDER: ${{ vars.LLM_PROVIDER || 'claude_code' }}
+          LLM_PROVIDER: ${{ vars.LLM_PROVIDER || 'gemini' }}
           LLM_FALLBACK: ${{ vars.LLM_FALLBACK }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
           MEDIA_HOST: ${{ vars.MEDIA_HOST }}
           SUPABASE_BUCKET: ${{ vars.SUPABASE_BUCKET || 'media' }}
           LINKEDIN_TOKEN_EXPIRES: ${{ vars.LINKEDIN_TOKEN_EXPIRES }}

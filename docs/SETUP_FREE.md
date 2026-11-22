@@ -41,34 +41,40 @@ developer docs for the permission names given here.
 3. Open your new bot and send it any message (e.g. `hi`).
 4. In a browser open `https://api.telegram.org/bot<TOKEN>/getUpdates` (put your token in).
    Find `"chat":{"id":123456789` → secret **`TELEGRAM_CHAT_ID`**.
+   ⚠️ This is **your** id, not the bot's. The number before the `:` in the token is the bot's own id,
+   and that is the wrong one. If the page shows `"result":[]`, send the bot another message and reload.
    (For a team group: add the bot to the group, send a message there, and use the group's id, which starts with `-`.)
 
 Only this chat can approve posts or use `/pause`. Messages from anyone else are ignored.
 
-## Step 2: AI brain, 5 minutes
+## Step 2: AI brain (Google Gemini, free), 5 minutes
 
-**Claude (main):** on a computer with Claude Code installed and logged in to your Claude plan, run:
+1. Go to <https://aistudio.google.com> and sign in with a Google account.
+2. *Get API key* → *Create API key* → secret **`GEMINI_API_KEY`**.
 
-```bash
-claude setup-token
-```
+That's all. Gemini's free tier is the default AI. The free limits are shown in AI Studio. If you ever hit the
+daily limit, set the variable **`GEMINI_MODEL`** to a "flash-lite" model listed there (higher free limits),
+or turn off `qa.llm_review` in `brand/brand.yaml` (halves the AI calls).
 
-Copy the long-lived token it prints → secret **`CLAUDE_CODE_OAUTH_TOKEN`**.
-
-**Gemini (backup, optional):** go to <https://aistudio.google.com> → *Get API key* → *Create API key* →
-secret **`GEMINI_API_KEY`**, then add the variable **`LLM_FALLBACK`** = `gemini`.
-(To use only Gemini, set the variable **`LLM_PROVIDER`** = `gemini`.)
+**Optional, only with a paid Claude Pro or Max plan:** run `claude setup-token` in a terminal → secret
+**`CLAUDE_CODE_OAUTH_TOKEN`**, variable **`LLM_PROVIDER`** = `claude_code`, and keep Gemini as backup
+with variable **`LLM_FALLBACK`** = `gemini`. A free Claude account shows "Claude Max, Ultra, or Pro
+is required"; in that case simply use Gemini.
 
 ## Step 3: Database + image hosting (Supabase), 10 minutes
 
 1. Sign up at <https://supabase.com> → *New project* (Free plan). Save the database password.
 2. Click **Connect** (top bar) → choose the **Session pooler** connection string (URI).
    GitHub Actions has no IPv6, so the "Direct connection" string does not work there.
-   Put your password into it → secret **`DATABASE_URL`**.
+   Replace `[YOUR-PASSWORD]` with your database password → secret **`DATABASE_URL`**.
+   If the password has symbols like `@ # / : ?`, either reset it to letters and numbers only
+   (Project Settings → Database → Reset password) or URL-encode them (`@` → `%40`, `#` → `%23`).
 3. **Storage** → *New bucket* → name `media` → turn **Public bucket** on → Create.
-4. **Project Settings → API**: *Project URL* → secret **`SUPABASE_URL`**;
-   the `service_role` key → secret **`SUPABASE_SERVICE_KEY`** (keep this one private, it has full access).
-5. Variable **`MEDIA_HOST`** = `supabase`.
+4. *Project URL* (shown on the project home page, e.g. `https://xxxx.supabase.co`) → secret **`SUPABASE_URL`**.
+5. **Project Settings → API Keys**: create or copy a **secret key** (`sb_secret_...`), or the
+   `service_role` key from the *Legacy API keys* tab → secret **`SUPABASE_SERVICE_KEY`**.
+   Never use the *publishable* / `anon` key here. Keep the secret key private: it has full access.
+6. Variable **`MEDIA_HOST`** = `supabase`.
 
 Alternative image host: free key from <https://api.imgbb.com> → secret **`IMGBB_API_KEY`**, variable `MEDIA_HOST` = `imgbb`.
 
@@ -77,9 +83,14 @@ Alternative image host: free key from <https://api.imgbb.com> → secret **`IMGB
 Requirements: a **Facebook Page**, and your Instagram set to a **Professional account** (Business or
 Creator) and **linked to that Page** (Page settings → Linked accounts → Instagram).
 
-1. Go to <https://developers.facebook.com> → *My Apps* → **Create app**. Pick the use cases for
-   managing a **Page** and managing **Instagram** content (names vary). Leave the app in
-   **Development** mode. As the app admin you can use it on your own Page and Instagram
+1. Go to <https://developers.facebook.com> → *My Apps* → **Create app** (name it e.g. `SMM Facebook Instagram`).
+   On **Add use cases**, choose the filter **Content management** and tick:
+   - **Manage everything on your Page**
+   - **Manage messaging & content on Instagram** (when asked, choose *API setup with Facebook login*)
+
+   Do **not** tick *Access the Threads API* here. Threads gets its own app in Step 5.
+   If it asks for a **Business** portfolio, pick yours or create one (free). Leave the app in
+   **Development** mode: as the app admin you can use it on your own Page and Instagram
    without App Review.
 2. Open **Tools → Graph API Explorer**, choose your app, *User Token*, and add these permissions:
    `pages_show_list`, `pages_read_engagement`, `pages_manage_posts`, `instagram_basic`,
@@ -98,8 +109,10 @@ Creator) and **linked to that Page** (Page settings → Linked accounts → Inst
 
 ## Step 5: Threads, 20 minutes
 
-1. In the same Meta developer account, create an app with the **Threads API** use case
-   (or add it to your app). Add the permissions `threads_basic` and `threads_content_publish`.
+1. In the same Meta developer account, **Create app** again (e.g. `SMM Threads`) and tick only
+   **Access the Threads API** (Meta keeps Threads in its own app). In the use case's settings,
+   add the permissions `threads_basic` and `threads_content_publish`. The Threads **App ID and secret**
+   are on the Threads use case's settings page; they differ from the app's main App ID.
 2. **App roles → Roles → Add Threads Tester** → your Threads username. Accept the invite in the
    Threads app: Settings → Account → Website permissions → Invites.
 3. In the Threads settings of the app, set a **Redirect URL**, e.g. this repo's URL

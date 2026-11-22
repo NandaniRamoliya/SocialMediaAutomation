@@ -1,10 +1,9 @@
 """LLM providers that cost $0.
 
-- claude_code : your existing Claude subscription, run headless through the Claude Code CLI
+- gemini      : DEFAULT. Google AI Studio free tier (GEMINI_API_KEY). Free-tier prompts may be used
+                by Google to improve its products, so never send private customer data through it.
+- claude_code : only if you have a Claude Pro/Max plan: runs headless through the Claude Code CLI
                 (`claude -p`). Auth: CLAUDE_CODE_OAUTH_TOKEN from `claude setup-token`.
-                Usage counts against your plan's normal usage limits.
-- gemini      : Google AI Studio free tier (GEMINI_API_KEY). Free-tier prompts may be used by
-                Google to improve its products, so never send private customer data through it.
 - fake        : deterministic responses for tests.
 
 Every agent calls `llm.complete_json(system, prompt, schema)` and gets a dict back.
@@ -171,7 +170,7 @@ def _provider(name: str):
 
 
 def get_llm(cfg: Config):
-    primary = _provider(env("LLM_PROVIDER") or "claude_code")
+    primary = _provider(env("LLM_PROVIDER") or "gemini")
     fallback_name = env("LLM_FALLBACK")
     if fallback_name:
         try:

@@ -41,8 +41,9 @@ def upload_public(cfg: Config, path: Path) -> str | None:
         name = Path(path).name
         resp = requests.post(
             f"{base.rstrip('/')}/storage/v1/object/{bucket}/{name}", data=data, timeout=60,
-            headers={"Authorization": f"Bearer {key}", "apikey": key,
-                     "Content-Type": "image/png", "x-upsert": "true"},
+            headers={"apikey": key, "Content-Type": "image/png", "x-upsert": "true",
+                     # legacy service_role keys are JWTs ("eyJ..."); new sb_secret_ keys go in apikey only
+                     **({"Authorization": f"Bearer {key}"} if key.startswith("eyJ") else {})},
         )
         if resp.status_code >= 400:
             raise MediaHostError(cfg.redact(f"supabase {resp.status_code}: {resp.text[:300]}"))
